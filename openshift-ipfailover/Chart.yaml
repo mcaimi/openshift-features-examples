@@ -1,0 +1,13 @@
+apiVersion: v2
+name: openshift-ipfailover
+version: "1.0"
+description: An helm chart that installs an ipFailover deployment (based on KeepaliveD) on OpenShift
+type: application
+keywords:
+  - application
+  - failover
+  - high-availability
+  - infrastructure
+home: https://docs.openshift.com/container-platform/4.10/networking/configuring-ipfailover.html
+sources:
+  - https://github.com/mcaimi/ocp-features-examples

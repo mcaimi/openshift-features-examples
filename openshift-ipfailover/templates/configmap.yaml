@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.ipFailover.instanceName}}-checkscript
+data:
+  {{- (.Files.Glob "scripts/keepalived-checkscript.sh").AsConfig | nindent 2 }}

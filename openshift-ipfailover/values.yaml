@@ -1,0 +1,53 @@
+deployment:
+  strategy: recreate
+  replicas: 2
+  containerImage: quay.io/openshift/origin-keepalived-ipfailover:latest
+  pullPolicy: IfNotPresent
+  imagePullSecret: openshift-pull-secret
+  placement:
+    selectors:
+      - key: "node-role.kubernetes.io/node-ipfailover"
+        value: ""
+    tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/node-ipfailover
+        value: reserved
+
+ipFailover:
+  instanceName: ipfailover-instance
+  serviceAccountName: ipfailover-sa
+  namespace: ipfailover-ns
+  labels:
+    matchLabels:
+      - key: ipfailover
+        value: keepalived
+    labels:
+      - key: application 
+        value: ipfailover-instance
+  envParams:
+    - name: OPENSHIFT_HA_CONFIG_NAME
+      value: "ipfailover-instance"
+    - name: OPENSHIFT_HA_VIRTUAL_IPS
+      value: "10.211.53.15"
+    - name: OPENSHIFT_HA_VIP_GROUPS
+      value: "10"
+    - name: OPENSHIFT_HA_NETWORK_INTERFACE
+      value: "ens3" #The host interface to assign the VIPs
+    - name: OPENSHIFT_HA_MONITOR_PORT
+      value: "30060"
+    - name: OPENSHIFT_HA_VRRP_ID_OFFSET
+      value: "0"
+    - name: OPENSHIFT_HA_USE_UNICAST
+      value: "false"
+    - name: OPENSHIFT_HA_IPTABLES_CHAIN
+      value: "INPUT"
+    - name: OPENSHIFT_HA_CHECK_SCRIPT
+      value: "/etc/keepalive/keepalived-checkscript.sh"
+    - name: OPENSHIFT_HA_PREEMPTION
+      value: "preempt_delay 300"
+    - name: OPENSHIFT_HA_CHECK_INTERVAL
+      value: "2"
+    #- name: OPENSHIFT_HA_UNICAST_PEERS
+    #  value: "10.0.148.40,10.0.160.234,10.0.199.110"
+    #- name: OPENSHIFT_HA_NOTIFY_SCRIPT
+    #  value: /etc/keepalive/keepalived-notifyscript.sh

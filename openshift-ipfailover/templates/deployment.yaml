@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.ipFailover.instanceName }}-keepalived
+  namespace: {{ .Values.ipFailover.namespace }}
+  {{- with .Values.ipFailover.labels.labels }}
+  labels:
+    {{- range . }}
+    {{ .key }}: {{ .value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  strategy:
+    type: {{ .Values.deployment.strategy }}
+  replicas: {{ .Values.deployment.replicas }}
+  {{- with .Values.ipFailover.labels.matchLabels }}
+  selector:
+    matchLabels:
+    {{- range . }}
+      {{ .key }}: {{ .value | quote }}
+    {{- end }}
+  {{- end }}
+  template:
+    name: {{ .Values.ipFailover.instanceName }}-keepalived
+    metadata:
+      annotations:
+        configmap/checksum: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- with .Values.ipFailover.labels.matchLabels }}
+      labels:
+        {{- range . }}
+        {{ .key }}: {{ .value | quote }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- include "keepalived.pod" . | nindent 6 -}}
+
+
+
