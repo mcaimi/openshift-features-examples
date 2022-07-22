@@ -1,0 +1,13 @@
+apiVersion: v2
+name: additional-ingress
+version: "1.0"
+description: An helm chart that deploys an additional Ingress Controller for sharding and workloads isolation purposes
+type: application
+keywords:
+  - application
+  - ingress-controller
+  - sharding
+  - traffic-isolation
+home: https://docs.openshift.com/container-platform/4.10/networking/ingress-operator.html
+sources:
+  - https://github.com/mcaimi/ocp-features-examples

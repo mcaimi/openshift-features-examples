@@ -1,0 +1,58 @@
+{{- if .Values.ingress.sharding.selector -}}
+{{- $shardSelectors := .Values.ingress.sharding.selector -}}
+{{- $nodeSelectors := .Values.deployment.placement.nodeselector -}}
+{{- $nodeTolerations := .Values.deployment.placement.tolerations -}}
+{{- $annotations := .Values.ingress.annotations -}}
+{{- $tlsProfile := .Values.tls.tlsProfile -}}
+---
+apiVersion: operator.openshift.io/v1
+kind: IngressController
+metadata:
+  finalizers:
+    - ingresscontroller.operator.openshift.io/finalizer-ingresscontroller
+  name: {{ .Values.ingress.name }}
+  namespace: openshift-ingress-operator
+  {{- with $annotations }}
+  annotations:
+    {{- . | toYaml | nindent 4 }}
+  {{- end }}
+spec:
+  domain: {{ .Values.ingress.wildcardDomain }}
+  defaultCertificate:
+    name: {{ .Values.ingress.name }}-wildcard-tls
+  {{- with .Values.tls.mutual }}
+  clientTLS:
+    clientCA:
+      name: {{ $.Values.ingress.name }}-mutual-tls
+    clientCertificatePolicy: "Required"
+  {{- end }}
+  {{- if $tlsProfile }}
+  {{- $tlsProfile | toYaml | nindent 2}}
+  {{- end }}
+  httpEmptyRequestsPolicy: {{ .Values.ingress.emptyRequestPolicy }}
+  httpErrorCodePages:
+    name: ""
+  {{- with $nodeSelectors }}
+  nodePlacement:
+    nodeSelector:
+      {{- range . }}
+      {{ .key }}: {{ .value | default "" | quote }}
+      {{- end }}
+    {{- with $nodeTolerations }}
+    tolerations:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{ .Values.ingress.sharding.routeBased | ternary "namespaceSelector:" "routeSelector:" }}
+  {{- range $shardSelectors }}
+    matchLabels:
+      {{ .key }}: {{ .value | quote }}
+  {{- end }}
+  replicas: {{ .Values.deployment.replicas }}
+  {{- with .Values.ingress.tuningOptions }}
+  tuningOptions:
+  {{- . | toYaml | nindent 4 }}
+  {{- end }}
+{{- else -}}
+  {{- fail "Sharding selector labels are not defined in value file" }}
+{{- end -}}

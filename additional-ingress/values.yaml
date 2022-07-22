@@ -1,0 +1,50 @@
+deployment:
+  replicas: 2
+  placement:
+    nodeselector:
+      - key: node-role.kubernetes.io/node-role
+        value: ""
+    tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/infraingressfe
+        value: reserved
+
+ingress:
+  name: additional-ingress
+  wildcardDomain: apps.additional.ingress.tld
+  sharding:
+    routeBased: false
+    selector:
+      - key: "shard"
+        value: "external"
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
+  emptyRequestPolicy: Ignore # otherwise Respond
+  tuningOptions: {}
+    # tunnelTimeout: 1h
+    # tlsInspectDelay: 5s
+    # clientFinTimeout: 1s
+    # serverTimeout: 30s
+    # serverFinTimeout: 1s
+    # clientTimeout: 30s
+    # threadCount: 4
+    # headerBufferMaxRewriteBytes: 8192
+    # headerBufferBytes: 32768
+
+tls:
+  wildcard:
+    cert: wildcard.cert.crt
+    key: wildcard.cert.key
+  mutual: {}
+    # cabundle: mutual.ca.crt
+  tlsProfile: {}
+    # tlsSecurityProfile:
+    #   type: Custom 
+    #   custom: 
+    #     ciphers: 
+    #       - ECDHE-ECDSA-CHACHA20-POLY1305
+    #       - ECDHE-RSA-CHACHA20-POLY1305
+    #       - ECDHE-RSA-AES128-GCM-SHA256
+    #       - ECDHE-ECDSA-AES128-GCM-SHA256
+    #     minTLSVersion: VersionTLS11
